@@ -1,3 +1,12 @@
+Slightly modified branch of the fake_spectra code: https://github.com/sbird/fake_spectra
+This is a frozen version of the code that was used in the following publications:
+  (1) https://ui.adsabs.harvard.edu/abs/2024arXiv241005383T/abstract
+  (2) https://ui.adsabs.harvard.edu/abs/2023AJ....166..228T/abstract
+  (3) https://ui.adsabs.harvard.edu/abs/2023ApJ...945L..17T/abstract
+This branch includes an additional script voigtfit_mod_wasserstein_distance.py that was used for Voigt fitting in (2).
+This script is a modified version of voigtfit.py that uses the Wasserstein distance when minimizing the fit.
+  
+
 = Flux extractor =
 
 This is a small code for generating and analyzing simulated spectra from
