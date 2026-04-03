@@ -17,11 +17,11 @@ To use this new fitting feature the user should import voigtfit_mod_wasserstein_
 
 Also included are example python scripts and a python script with a variety of Lyman-alpha forest statistic computational functions. These files are briefly described below:
 
-generate_fakespectra.py - example script that generates mock spectra using fake_spectra.
+- generate_fakespectra.py - example script that generates mock spectra using fake_spectra.
 
-fakespectra_getT.py - example script that computes temperature values for generated mock spectra.
+- fakespectra_getT.py - example script that computes temperature values for generated mock spectra.
 
-fs_functions - a set of functions used to generate various Lyman-alpha forest statistics including: the 1D transmitted flux power spectrum (P1D), the b-value distribution, and the column density distribution (CDD). For the CDD there are functions to generate with both a Voigt fitting method and a direct integration method. For the P1D and the Voigt fitting methods (both CD and b-value are out put from the Voigt fits) there are functions that will correct the mean transmitted flux post-processing and the HI photoionizing rate post-processing based on user input. Each function is described further in the file. 
+- fs_functions.py - a set of functions used to generate various Lyman-alpha forest statistics including: the 1D transmitted flux power spectrum (P1D), the b-value distribution, and the column density distribution (CDD). For the CDD there are functions to generate with both a Voigt fitting method and a direct integration method. For the P1D and the Voigt fitting methods (both CD and b-value are out put from the Voigt fits) there are functions that will correct the mean transmitted flux post-processing and the HI photoionizing rate post-processing based on user input. Each function is described further in the file. Additional dependencies: Pickle
 
 ## Main Documentaion
 
