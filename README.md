@@ -1,3 +1,5 @@
+## About this Branch
+
 Slightly modified branch of the fake_spectra code: https://github.com/sbird/fake_spectra
 
 This is a frozen version of the code that was used in the following publications:
@@ -10,7 +12,18 @@ This is a frozen version of the code that was used in the following publications
   
 This branch includes an additional script voigtfit_mod_wasserstein_distance.py that was used for Voigt fitting in (2).
 This script is a modified version of voigtfit.py that uses the Wasserstein distance when minimizing the fit.
-  
+
+To use this new fitting feature the user should import voigtfit_mod_wasserstein_distance as voigtfit.
+
+Also included are example python scripts and a python script with a variety of Lyman-alpha forest statistic computational functions. These files are briefly described below:
+
+    generate_fakespectra.py - example script that generates mock spectra using fake_spectra.
+
+    fakespectra_getT.py - example script that computes temperature values for generated mock spectra.
+
+    fs_functions - a set of functions used to generate various Lyman-alpha forest statistics including: the 1D transmitted flux power spectrum (P1D), the b-value distribution, and the column density distribution (CDD). For the CDD there are functions to generate with both a Voigt fitting method and a direct integration method. For the P1D and the Voigt fitting methods (both CD and b-value are out put from the Voigt fits) there are functions that will correct the mean transmitted flux post-processing and the HI photoionizing rate post-processing based on user input. Each function is described further in the file. 
+
+## Main Documentaion
 
 = Flux extractor =
 
