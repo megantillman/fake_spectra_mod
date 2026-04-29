@@ -2,6 +2,7 @@
 A simple Voigt profile fitter. Works by finding peaks and removing them iteratively.
 All the peaks are then re-fit to the spectrum at once. Minimisation is done by scipy.
 Algorithm suggested by Boris Leistedt, closely based on that in AUTOVP by Ben Oppenheimer & Romeel Dave.
+Updated to include the option to use the Earth movers distance for fitting instead of a least squares approach.
 """
 
 import math
@@ -10,6 +11,7 @@ import multiprocessing
 import numpy as np
 import scipy.optimize as optimize
 import scipy.special
+from scipy.stats import wasserstein_distance
 
 from . import line_data
 
@@ -19,12 +21,15 @@ class Profiles(object):
             dvbin - Size of velocity bin in km/s.
             profile - either Voigt of Gaussian.
             elem, ion, line - Line to fit and ion to use.
+            EMD - Whether or not to use the wasserstein distance when fitting profiles.
+                  Defailt is to use a least squares fitting.
     """
-    def __init__(self, tau, dvbin, profile="Voigt", elem="H", ion=1, line=1215):
+    def __init__(self, tau, dvbin, profile="Voigt", elem="H", ion=1, line=1215, EMD=False):
         self.dvbin = dvbin
         self.amplitudes = []
         self.means = []
         self.stddev = []
+        self.EMD = False
         if profile == "Gaussian":
             self.profile = self.gaussian_profile
         else:
@@ -145,7 +150,10 @@ class Profiles(object):
         minn = np.max(np.append(mins[np.where(mins < midpt)], 0))
         maxx = np.min(np.append(mins[np.where(mins > midpt)], np.size(tau)))
         assert minn < midpt and maxx > midpt
-        diff = np.sum(((np.exp(-tau) - np.exp(-gauss)))[minn:maxx]**2)
+        if self.EMD = True:
+            diff = wasserstein_distance(np.exp(-tau[minn:maxx]), np.exp(-gauss[minn:maxx]))
+        else:
+            diff = np.sum(((np.exp(-tau) - np.exp(-gauss)))[minn:maxx]**2)
         return diff
 
     def profile_multiple(self, stddevs, means, amplitudes):
@@ -161,7 +169,10 @@ class Profiles(object):
         means = inputs[third:2*third]
         amplitudes = inputs[2*third:]
         gauss = self.profile_multiple(stddevs, means, amplitudes)
-        return np.sum((np.exp(-self.tau) - np.exp(-gauss))**2)
+        if self.EMD = False:
+            return wasserstein_distance(np.exp(-self.tau), np.exp(-gauss))
+        else:
+            return np.sum((np.exp(-self.tau) - np.exp(-gauss))**2)
 
     def voigt_profile(self, stddev, mean, amplitude):
         """Compute the Voigt profile, which is the real part of the
