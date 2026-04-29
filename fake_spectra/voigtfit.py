@@ -288,18 +288,19 @@ class Profiles(object):
 class _SingleProfileHelper(object):
     """Picklable helper class to Voigt fit a single profile and optionally print how long it took.
     Used because lambdas are not picklable and functools.partial is not picklable on python 2."""
-    def __init__(self, dvbin, elem, ion, line, verbose=False, close=0.):
+    def __init__(self, dvbin, elem, ion, line, verbose=False, close=0., EMD=False):
         self.dvbin = dvbin
         self.elem = elem
         self.ion = ion
         self.line = line
         self.verbose = verbose
         self.close = close
+        self.EMD = EMD
 
     def __call__(self, tau_t):
         """Call the fit"""
         stime = time.time()
-        prof = Profiles(tau_t, self.dvbin, elem=self.elem, ion=self.ion, line=self.line)
+        prof = Profiles(tau_t, self.dvbin, elem=self.elem, ion=self.ion, line=self.line, EMD=self.EMD)
         prof.do_fit()
         n_this, _ = prof.get_systems(self.close)
         ftime = time.time()
@@ -308,16 +309,16 @@ class _SingleProfileHelper(object):
             print("Fit took: ", ftime-stime, " s")
         return n_this, prof.get_b_params()
 
-def get_voigt_fit_params(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0.):
+def get_voigt_fit_params(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0., EMD=False):
     """Helper function to get the Voigt parameters, N_HI and b in a single call."""
-    return get_voigt_systems(taus, dvbin, elem, ion, line, verbose, close, b_param=True)
+    return get_voigt_systems(taus, dvbin, elem, ion, line, verbose, close, b_param=True, EMD=EMD)
 
-def get_voigt_systems(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0., b_param=False):
+def get_voigt_systems(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0., b_param=False, EMD=False):
     """Helper function to get the Voigt parameters, N_HI and (optionally) b in a single call."""
     start = time.time()
     #Set up multiprocessing pool: lambdas are not picklable, so not using them.
     #functools.partial not picklable on python 2.
-    helper = _SingleProfileHelper(dvbin, elem, ion, line, verbose, close)
+    helper = _SingleProfileHelper(dvbin, elem, ion, line, verbose, close, EMD)
     pool = multiprocessing.Pool(None)
     results, b_results = zip(*pool.map(helper, taus))
     n_vals = np.concatenate(results)
