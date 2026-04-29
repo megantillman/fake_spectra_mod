@@ -13,7 +13,7 @@ This is a frozen version of the code that was used in the following publications
 This branch includes an additional script voigtfit_mod_wasserstein_distance.py that was used for Voigt fitting in (2).
 This script is a modified version of voigtfit.py that uses the Wasserstein distance when minimizing the fit.
 
-To use this new fitting feature the user should import voigtfit_mod_wasserstein_distance as voigtfit.
+To use this new fitting feature the user should set EMD = True when calling the Voigt fitting function.
 
 Also included are example python scripts and a python script with a variety of Lyman-alpha forest statistic computational functions. These files are briefly described below:
 
