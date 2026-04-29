@@ -150,7 +150,7 @@ class Profiles(object):
         minn = np.max(np.append(mins[np.where(mins < midpt)], 0))
         maxx = np.min(np.append(mins[np.where(mins > midpt)], np.size(tau)))
         assert minn < midpt and maxx > midpt
-        if self.EMD = True:
+        if self.EMD == True:
             diff = wasserstein_distance(np.exp(-tau[minn:maxx]), np.exp(-gauss[minn:maxx]))
         else:
             diff = np.sum(((np.exp(-tau) - np.exp(-gauss)))[minn:maxx]**2)
@@ -169,7 +169,7 @@ class Profiles(object):
         means = inputs[third:2*third]
         amplitudes = inputs[2*third:]
         gauss = self.profile_multiple(stddevs, means, amplitudes)
-        if self.EMD = False:
+        if self.EMD == False:
             return wasserstein_distance(np.exp(-self.tau), np.exp(-gauss))
         else:
             return np.sum((np.exp(-self.tau) - np.exp(-gauss))**2)
