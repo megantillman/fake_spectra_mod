@@ -3,6 +3,7 @@ A simple Voigt profile fitter. Works by finding peaks and removing them iterativ
 All the peaks are then re-fit to the spectrum at once. Minimisation is done by scipy.
 Algorithm suggested by Boris Leistedt, closely based on that in AUTOVP by Ben Oppenheimer & Romeel Dave.
 Updated to include the option to use the Earth movers distance for fitting instead of a least squares approach.
+Updated to include a helped function that returns the Voigt fit parameters and the raw fit results.
 """
 
 import math
@@ -150,7 +151,7 @@ class Profiles(object):
         minn = np.max(np.append(mins[np.where(mins < midpt)], 0))
         maxx = np.min(np.append(mins[np.where(mins > midpt)], np.size(tau)))
         assert minn < midpt and maxx > midpt
-        if self.EMD == True:
+        if self.EMD:
             diff = wasserstein_distance(np.exp(-tau[minn:maxx]), np.exp(-gauss[minn:maxx]))
         else:
             diff = np.sum(((np.exp(-tau) - np.exp(-gauss)))[minn:maxx]**2)
@@ -169,10 +170,9 @@ class Profiles(object):
         means = inputs[third:2*third]
         amplitudes = inputs[2*third:]
         gauss = self.profile_multiple(stddevs, means, amplitudes)
-        if self.EMD == False:
+        if self.EMD:
             return wasserstein_distance(np.exp(-self.tau), np.exp(-gauss))
-        else:
-            return np.sum((np.exp(-self.tau) - np.exp(-gauss))**2)
+        return np.sum((np.exp(-self.tau) - np.exp(-gauss))**2)
 
     def voigt_profile(self, stddev, mean, amplitude):
         """Compute the Voigt profile, which is the real part of the
@@ -288,7 +288,7 @@ class Profiles(object):
 class _SingleProfileHelper(object):
     """Picklable helper class to Voigt fit a single profile and optionally print how long it took.
     Used because lambdas are not picklable and functools.partial is not picklable on python 2."""
-    def __init__(self, dvbin, elem, ion, line, verbose=False, close=0., EMD=False):
+    def __init__(self, dvbin, elem, ion, line, verbose=False, close=0., EMD=False, more=False):
         self.dvbin = dvbin
         self.elem = elem
         self.ion = ion
@@ -296,6 +296,7 @@ class _SingleProfileHelper(object):
         self.verbose = verbose
         self.close = close
         self.EMD = EMD
+        self.more = more
 
     def __call__(self, tau_t):
         """Call the fit"""
@@ -307,25 +308,36 @@ class _SingleProfileHelper(object):
         if self.verbose:
             print("Fit: systems=", np.size(n_this), np.size(prof.get_b_params()), "N=", np.max(n_this))
             print("Fit took: ", ftime-stime, " s")
+        if self.more:
+            return n_this, prof.get_b_params(), prof.get_fitted_profile()
         return n_this, prof.get_b_params()
-
+        
 def get_voigt_fit_params(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0., EMD=False):
     """Helper function to get the Voigt parameters, N_HI and b in a single call."""
     return get_voigt_systems(taus, dvbin, elem, ion, line, verbose, close, b_param=True, EMD=EMD)
 
-def get_voigt_systems(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0., b_param=False, EMD=False):
+def get_voigt_fits_and_params(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0., EMD=False):
+    """Helper function to get the Voigt parameters, N_HI, b, and the fitted profiles in a single call."""
+    return get_voigt_systems(taus, dvbin, elem, ion, line, verbose, close, b_param=True, EMD=EMD, more=True)
+
+def get_voigt_systems(taus, dvbin, elem="H", ion=1, line=1215, verbose=False, close=0., b_param=False, EMD=False, more=False):
     """Helper function to get the Voigt parameters, N_HI and (optionally) b in a single call."""
     start = time.time()
     #Set up multiprocessing pool: lambdas are not picklable, so not using them.
     #functools.partial not picklable on python 2.
-    helper = _SingleProfileHelper(dvbin, elem, ion, line, verbose, close, EMD)
+    helper = _SingleProfileHelper(dvbin, elem, ion, line, verbose, close, EMD, more)
     pool = multiprocessing.Pool(None)
-    results, b_results = zip(*pool.map(helper, taus))
+    if more:
+        results, b_results, fit_results = zip(*pool.map(helper, taus))
+    else:
+        results, b_results = zip(*pool.map(helper, taus))
     n_vals = np.concatenate(results)
     end = time.time()
     print("Total fit took: ", end-start, " s")
-    if b_param:
+    if more:
         b_params = np.concatenate(b_results)
+        return n_vals, b_params, fit_results
+    if b_param:
         return n_vals, b_params
     return n_vals
 
@@ -340,10 +352,10 @@ def _opt_power_fit(inputs, lb_params, ln_vals):
     gamm1 = inputs[1]
     return np.sum(abs(lb_params - _power_fit(ln_vals, lb0, gamm1)))
 
-def get_b_param_dist(taus, dvbin, elem="H", ion=1, line=1215):
+def get_b_param_dist(taus, dvbin, elem="H", ion=1, line=1215, EMD=False):
     """Get the power law betweeen the 'minimum' b parameter and column density,
     following Rudie 2012 and Schaye 1999."""
-    n_vals, b_params = get_voigt_systems(taus, dvbin, elem=elem, ion=ion, line=line, verbose=False, close=-1., b_param=True)
+    n_vals, b_params = get_voigt_systems(taus, dvbin, elem=elem, ion=ion, line=line, verbose=False, close=-1., b_param=True, EMD=EMD)
     used = np.where((b_params > 8)*(b_params < 100)*(n_vals < 10**(14.5))*(n_vals > 10**(12.5)))
     sort = np.argsort(np.log10(n_vals[used]))
     ln_vals = np.log10(n_vals[used])[sort]
