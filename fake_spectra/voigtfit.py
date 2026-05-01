@@ -30,7 +30,7 @@ class Profiles(object):
         self.amplitudes = []
         self.means = []
         self.stddev = []
-        self.EMD = False
+        self.EMD = EMD
         if profile == "Gaussian":
             self.profile = self.gaussian_profile
         else:
