@@ -133,15 +133,13 @@ def get_voigt_CDD(spectra, elem="H", ion=1, line=1215, dLogN = 0.2, minN = 11., 
         flux_noise[flux_noise < 0] = 0
         tau_noise = -np.log(flux_noise)
         tau = np.asarray(tau_noise)
-    
-    # Here I filter out all sightlines with optical depths over 100. 
-    # Those absorbers tend to crash the fitting code. 
+        
     tau_filt = [tau_ind for tau_ind in tau if not (max(tau_ind) > 100)]
     tau = np.asarray(tau_filt)
         
     tot_lines = len(tau[:,0])
 
-    n_vals, b_params, fit_results = voigtfit.get_voigt_fit_params(tau, spectra.dvbin, elem=elem, ion=ion, line=line, verbose=False, close=close, EMD=EMD)
+    n_vals, b_params, fit_results = voigtfit.get_voigt_fits_and_params(tau, spectra.dvbin, elem=elem, ion=ion, line=line, verbose=False, close=close, EMD=EMD)
     
     if dlogn:
         div_width=dLogN
@@ -162,12 +160,13 @@ def get_voigt_CDD(spectra, elem="H", ion=1, line=1215, dLogN = 0.2, minN = 11., 
 
 
 def get_voigt_CDD_UVBcorr(spectra, UVBcorr=1, elem="H", ion=1, line=1215, dLogN = 0.2, minN = 11., maxN = 23., close=0, dX=False, dlogn = True, nspectra=-1, EMD=True):
-    """ Same function as get_voigt_CDD but now correcting the flux post-processing 
+    """This computes the column density function using column densities from a Voigt profile fit.
+        Concatenate objects closer than close km/s. 
+        Same function as get_voigt_CDD but now correcting the flux post-processing 
         to change to assumed photoionizing rate for HI.
         
         New argument:
             UVBcorr - the factor by which you want to scale the assumed HI photoionizing rate
-                      default of 1 means the fits will run just like in the previous function.
         """
 
     NHI_table = 10**np.arange(minN, maxN, dLogN)
@@ -181,7 +180,7 @@ def get_voigt_CDD_UVBcorr(spectra, UVBcorr=1, elem="H", ion=1, line=1215, dLogN 
         
     tot_lines = len(tau[:,0])
 
-    n_vals, b_params, fit_results = voigtfit.get_voigt_fit_params(tau, spectra.dvbin, elem=elem, ion=ion, line=line, verbose=False, close=close, EMD=EMD)
+    n_vals, b_params, fit_results = voigtfit.get_voigt_fits_and_params(tau, spectra.dvbin, elem=elem, ion=ion, line=line, verbose=False, close=close, EMD=EMD)
     
     if dlogn:
         div_width=dLogN
@@ -202,7 +201,8 @@ def get_voigt_CDD_UVBcorr(spectra, UVBcorr=1, elem="H", ion=1, line=1215, dLogN 
 
 
 def get_voigt_CDD_taueff(spectra, rsmatch, elem="H", ion=1, line=1215, dLogN = 0.2, minN = 11., maxN = 23., close=0, dX=False, dlogn = True, nspectra=-1, EMD=True):
-    """ Same function as get_voigt_CDD but now correcting the flux post-processing 
+    """This computes the column density function using column densities from a Voigt profile fit.
+        Same function as get_voigt_CDD but now correcting the flux post-processing 
         to match the same mean flux as a secondary given spectral file.
         
         New argument:
@@ -223,7 +223,7 @@ def get_voigt_CDD_taueff(spectra, rsmatch, elem="H", ion=1, line=1215, dLogN = 0
         
     tot_lines = len(tau[:,0])
 
-    n_vals, b_params, fit_results = voigtfit.get_voigt_fit_params(tau, spectra.dvbin, elem=elem, ion=ion, line=line, verbose=False, close=close, EMD=EMD)
+    n_vals, b_params, fit_results = voigtfit.get_voigt_fits_and_params(tau, spectra.dvbin, elem=elem, ion=ion, line=line, verbose=False, close=close, EMD=EMD)
     
     if dlogn:
         div_width=dLogN
