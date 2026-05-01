@@ -9,9 +9,8 @@ This is a version of the code that was used in the following publications:
   (2) https://ui.adsabs.harvard.edu/abs/2023AJ....166..228T/abstract
   
   (3) https://ui.adsabs.harvard.edu/abs/2023ApJ...945L..17T/abstract
-  
-This branch includes an additional script voigtfit_mod_wasserstein_distance.py that was used for Voigt fitting in (2).
-This script is a modified version of voigtfit.py that uses the Wasserstein distance when minimizing the fit.
+
+This version includes a modified version of voigtfit.py that uses the Wasserstein distance when minimizing the fit.
 
 To use this new fitting feature the user should set EMD = True when calling the Voigt fitting function.
 
