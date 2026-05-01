@@ -2,7 +2,7 @@
 
 Slightly modified branch of the fake_spectra code: https://github.com/sbird/fake_spectra
 
-This is a frozen version of the code that was used in the following publications:
+This is a version of the code that was used in the following publications:
 
   (1) https://ui.adsabs.harvard.edu/abs/2024arXiv241005383T/abstract
   
